@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom colors for our quiz app
+				quiz: {
+					primary: '#9b1c31', // Deep red color for primary elements
+					secondary: '#f5f5f5', // Light gray for secondary elements
+					progress: '#4a90e2', // Blue for progress indicators
+					success: '#4caf50', // Green for success indicators
+					warning: '#ff9800', // Orange for warnings
+					error: '#f44336', // Red for errors
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
