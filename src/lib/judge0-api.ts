@@ -53,6 +53,18 @@ export const getAvailableLanguages = () => {
   }));
 };
 
+// Define the expected structure for the Judge0 API response
+interface JudgeResult {
+  passed: boolean;
+  stdout?: string;
+  stderr?: string;
+  compile_output?: string;
+  message?: string;
+  status?: any;
+  time?: string;  // Add these properties to match the usage below
+  memory?: string; // Add these properties to match the usage below
+}
+
 // Submit code to Judge0 API
 export const submitCodeToJudge0 = async (
   code: string,
@@ -115,8 +127,10 @@ export const submitCodeToJudge0 = async (
         stderr: result.stderr,
         compile_output: result.compile_output,
         message: result.message,
-        status: result.status
-      };
+        status: result.status,
+        time: result.time,  // Include time property
+        memory: result.memory  // Include memory property
+      } as JudgeResult;
     }));
     
     // Check if all test cases passed
@@ -163,7 +177,12 @@ const simulateSubmission = (code: string, testCases: TestCase[]): Promise<Submis
           details: {
             executionTime: "0.023s",
             memoryUsed: "12.4 MB",
-            results: testCases.map(() => ({ passed: true, stdout: "Success" }))
+            results: testCases.map(() => ({ 
+              passed: true, 
+              stdout: "Success",
+              time: "0.023s",  // Add these properties to match the usage
+              memory: "12.4 MB" // Add these properties to match the usage
+            }))
           }
         });
       } else {
@@ -175,7 +194,9 @@ const simulateSubmission = (code: string, testCases: TestCase[]): Promise<Submis
               passed: false,
               stdout: "Incorrect output",
               expected: testCases[0].expectedOutput,
-              testCase: testCases[0]
+              testCase: testCases[0],
+              time: "0.015s",  // Add these properties to match the usage
+              memory: "10.2 MB" // Add these properties to match the usage
             }]
           }
         });
