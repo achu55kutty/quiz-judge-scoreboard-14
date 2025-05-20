@@ -7,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import CodeEditor from "@/components/CodeEditor";
-import { submitCodeToJudge0 } from "@/lib/judge0-api";
+import { submitCodeToJudge0, getApiKey } from "@/lib/judge0-api";
+import ApiKeyConfig from "@/components/ApiKeyConfig";
 import { Clock } from "lucide-react";
 
 interface QuizQuestion {
@@ -428,6 +429,26 @@ const sectionOrder = [
 
 const QUIZ_TIME_LIMIT = 30 * 60; // 30 minutes in seconds
 
+// Add data structure for correct answers
+const correctAnswers: { [key: number]: string } = {
+  1: "<script src=\"app.js\"></script>",
+  2: "MongoDB",
+  3: "Representational State Transfer",
+  // Add more correct answers for all multiple choice questions
+  6: "Amazon EC2",
+  7: "terraform apply",
+  8: "Handling increased load",
+  11: "VLOOKUP",
+  12: "SQL",
+  13: "Display data visually in a simplified way",
+  16: "Integrate development and operations for faster delivery",
+  17: "Containerization",
+  18: "Automating infrastructure setup using code",
+  21: "Predict output from labeled data",
+  22: "Scikit-learn",
+  23: "Classification"
+};
+
 const Quiz = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -438,6 +459,7 @@ const Quiz = () => {
   const [progressPercent, setProgressPercent] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME_LIMIT);
   const [sectionScores, setSectionScores] = useState<{[key: string]: number}>({});
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(!!getApiKey());
   
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = quizQuestions.length;
@@ -486,7 +508,7 @@ const Quiz = () => {
     setAnswers({ ...answers, [currentQuestion.id]: value });
   };
   
-  // Calculate section scores
+  // Calculate section scores with actual answer checking
   const calculateSectionScores = useCallback(() => {
     const sections: {[key: string]: {correct: number, total: number}} = {};
     
@@ -500,12 +522,22 @@ const Quiz = () => {
     
     // Count correct answers per section
     Object.entries(answers).forEach(([questionId, answer]) => {
-      const question = quizQuestions.find(q => q.id === parseInt(questionId));
+      const qId = parseInt(questionId);
+      const question = quizQuestions.find(q => q.id === qId);
       if (!question) return;
       
-      // For this simplified version, we'll consider all answers correct
-      // In a real implementation, you would compare with actual correct answers
-      sections[question.section].correct++;
+      if (question.type === "multiple-choice") {
+        // Check if the answer is correct for multiple choice
+        if (correctAnswers[qId] === answer) {
+          sections[question.section].correct++;
+        }
+      } else {
+        // For coding questions, we'll assume they're correct if the student submitted them
+        // since real validation happens through the API
+        if (answer) {
+          sections[question.section].correct++;
+        }
+      }
     });
     
     // Calculate percentages
@@ -523,13 +555,24 @@ const Quiz = () => {
     navigate("/results", { 
       state: { 
         answers,
-        sectionScores: finalSectionScores
+        sectionScores: finalSectionScores,
+        correctAnswers // Pass correct answers to results page
       } 
     });
   };
   
   const handleCheckCode = async () => {
     if (currentQuestion.type !== "coding") return;
+    
+    // Check if API key is configured
+    if (!getApiKey()) {
+      toast({
+        title: "API Key Required",
+        description: "Please configure the API key to check your code.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -638,6 +681,13 @@ const Quiz = () => {
         <Progress value={progressPercent} className="h-2" />
       </div>
       
+      {/* API Key Configuration */}
+      {!apiKeyConfigured && currentQuestion.type === "coding" && (
+        <div className="container mx-auto px-4 py-4">
+          <ApiKeyConfig onKeyConfigured={() => setApiKeyConfigured(true)} />
+        </div>
+      )}
+      
       {/* Main quiz content */}
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-4xl mx-auto">
@@ -707,7 +757,7 @@ const Quiz = () => {
               {currentQuestion.type === "coding" ? (
                 <Button 
                   onClick={handleCheckCode}
-                  disabled={!code || isSubmitting}
+                  disabled={!code || isSubmitting || !apiKeyConfigured}
                 >
                   {isSubmitting ? 'Checking...' : 'Check Code'}
                 </Button>

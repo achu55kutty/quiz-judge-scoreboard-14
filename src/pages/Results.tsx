@@ -15,9 +15,10 @@ const Results = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Get the answers from the location state
+  // Get the data from the location state
   const answers = location.state?.answers || {};
   const sectionScores = location.state?.sectionScores || {};
+  const correctAnswers = location.state?.correctAnswers || {};
   
   // Calculate overall score based on section scores
   const calculateOverallScore = () => {
@@ -40,6 +41,24 @@ const Results = () => {
   const overallScore = calculateOverallScore();
   
   const handleDownloadReport = () => {
+    // Generate a simple text report
+    let reportContent = "Quiz Results Report\n\n";
+    reportContent += `Overall Score: ${overallScore}%\n\n`;
+    reportContent += "Section Scores:\n";
+    
+    Object.entries(sectionScores).forEach(([section, score]) => {
+      reportContent += `${section}: ${score}%\n`;
+    });
+    
+    // Create a download link
+    const element = document.createElement("a");
+    const file = new Blob([reportContent], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "quiz-results.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
     toast({
       title: "Report Generated",
       description: "Your personalized quiz report has been downloaded.",
