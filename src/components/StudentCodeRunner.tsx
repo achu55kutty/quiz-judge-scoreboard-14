@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import CodeEditor from "@/components/CodeEditor";
-import ApiKeyConfig from "@/components/ApiKeyConfig";
-import { submitCodeToJudge0, getApiKey, getAvailableLanguages } from "@/lib/judge0-api";
+import { submitCodeToJudge0, getAvailableLanguages } from "@/lib/judge0-api";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRightIcon, CheckIcon, XIcon } from "lucide-react";
 
@@ -38,7 +37,6 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
   const [customOutput, setCustomOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<any[]>([]);
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(!!getApiKey());
   const { toast } = useToast();
   const languages = getAvailableLanguages();
 
@@ -84,15 +82,6 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
       toast({
         title: "No Code",
         description: "Please write some code before testing.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!apiKeyConfigured) {
-      toast({
-        title: "API Key Required",
-        description: "Please configure the API key to check your code.",
         variant: "destructive",
       });
       return;
@@ -145,10 +134,6 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
         <CardTitle>Student Coding Exercise</CardTitle>
       </CardHeader>
       <CardContent>
-        {!apiKeyConfigured && (
-          <ApiKeyConfig onKeyConfigured={() => setApiKeyConfigured(true)} />
-        )}
-
         <div className="mb-4">
           <p className="text-lg font-medium mb-3">{question}</p>
         </div>
@@ -199,7 +184,7 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
               </Button>
               <Button
                 onClick={handleTestCode}
-                disabled={isRunning || !code.trim() || !apiKeyConfigured}
+                disabled={isRunning || !code.trim()}
               >
                 {isRunning ? "Running..." : "Submit & Test"}
               </Button>
@@ -261,7 +246,7 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
               <div className="flex justify-end mt-4">
                 <Button
                   onClick={handleTestCode}
-                  disabled={isRunning || !code.trim() || !apiKeyConfigured}
+                  disabled={isRunning || !code.trim()}
                 >
                   {isRunning ? "Testing..." : "Run Tests"}
                 </Button>
