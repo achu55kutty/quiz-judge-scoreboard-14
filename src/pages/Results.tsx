@@ -20,7 +20,12 @@ const Results = () => {
     const totalSections = Object.keys(sectionScores).length;
     if (totalSections === 0) return 0;
     
-    const totalScore = Object.values(sectionScores).reduce((sum: any, score: any) => sum + score, 0);
+    // Convert values to numbers before summing
+    const totalScore = Object.values(sectionScores).reduce(
+      (sum, score) => sum + (typeof score === 'number' ? score : 0), 
+      0
+    );
+    
     return Math.round(totalScore / totalSections);
   };
   
@@ -82,9 +87,12 @@ const Results = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium">{section}</span>
-                    <span className="font-bold">{sectionScore}%</span>
+                    <span className="font-bold">{String(sectionScore)}%</span>
                   </div>
-                  <Progress value={sectionScore as number} className="h-2" />
+                  <Progress 
+                    value={typeof sectionScore === 'number' ? sectionScore : 0} 
+                    className="h-2" 
+                  />
                 </CardContent>
               </Card>
             ))}
