@@ -19,13 +19,15 @@ const Results = () => {
   const calculateScore = () => {
     // In a real app, you would compare the user's answers to the correct answers
     return {
-      totalQuestions: 5,
-      correctAnswers: 4,
+      totalQuestions: 25,
+      correctAnswers: 20,
       percentageScore: 80,
       sectionScores: {
-        "Password & Authentication": 100,
-        "Software Security": 50,
-        "Data Protection": 100,
+        "Full-Stack Developer": 85,
+        "Cloud Engineer": 75,
+        "Data Analyst": 90,
+        "DevOps Engineer": 80,
+        "Machine Learning Engineer": 70
       }
     };
   };
@@ -53,15 +55,15 @@ const Results = () => {
       <div className="bg-white py-6 border-b">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
-            {["Password & Authentication", "Software Security", "Data Protection", "Network Security", "Complete"].map((section, index) => (
+            {["Full-Stack Developer", "Cloud Engineer", "Data Analyst", "DevOps Engineer", "Machine Learning Engineer", "Complete"].map((section, index) => (
               <React.Fragment key={index}>
                 <div className="flex flex-col items-center">
                   <div className="rounded-full w-8 h-8 flex items-center justify-center bg-quiz-primary text-white">
-                    {index < 4 ? (index + 1) : "✓"}
+                    {index < 5 ? (index + 1) : "✓"}
                   </div>
                   <span className="text-xs mt-1 max-w-[80px] text-center">{section}</span>
                 </div>
-                {index < 4 && <div className="h-1 flex-1 bg-quiz-primary mx-2"></div>}
+                {index < 5 && <div className="h-1 flex-1 bg-quiz-primary mx-2"></div>}
               </React.Fragment>
             ))}
           </div>
@@ -125,9 +127,21 @@ const Results = () => {
                     <ChevronRight className="text-yellow-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Improve Your Software Security Knowledge</h4>
+                    <h4 className="font-medium">Improve Your Machine Learning Knowledge</h4>
                     <p className="text-gray-600 mt-1">
-                      Your score in this section was lower than others. Consider reviewing secure coding practices and common vulnerabilities.
+                      Your score in this section was lower than others. Consider reviewing machine learning algorithms and fundamental concepts.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full p-2 bg-yellow-100">
+                    <ChevronRight className="text-yellow-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Enhance Cloud Engineer Skills</h4>
+                    <p className="text-gray-600 mt-1">
+                      Focus more on cloud infrastructure and scalability concepts to improve in this area.
                     </p>
                   </div>
                 </div>
@@ -137,9 +151,21 @@ const Results = () => {
                     <ChevronRight className="text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Strong Password & Authentication Practices</h4>
+                    <h4 className="font-medium">Strong Data Analysis Skills</h4>
                     <p className="text-gray-600 mt-1">
-                      You demonstrated excellent knowledge in this area. Keep up with the latest authentication trends.
+                      You demonstrated excellent knowledge in data analysis. Keep up with the latest data visualization and SQL techniques.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  <div className="rounded-full p-2 bg-green-100">
+                    <ChevronRight className="text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Solid Full-Stack Development Foundation</h4>
+                    <p className="text-gray-600 mt-1">
+                      Your full-stack development skills are strong. Continue building projects to reinforce these skills.
                     </p>
                   </div>
                 </div>

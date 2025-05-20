@@ -24,97 +24,405 @@ interface QuizQuestion {
   starterCode?: string;
 }
 
-// Sample questions data
+// Updated questions data from the provided images
 const quizQuestions: QuizQuestion[] = [
+  // Full-Stack Developer Questions
   {
     id: 1,
-    section: "Password & Authentication",
+    section: "Full-Stack Developer",
     type: "multiple-choice",
-    question: "Which of the following is the most secure password policy?",
+    question: "What is the correct syntax to link an external JavaScript file?",
     options: [
-      "Requiring at least 8 characters with mixed case and symbols",
-      "Requiring password changes every 30 days",
-      "Using biometric authentication only",
-      "Implementing multi-factor authentication with app-based tokens"
+      "<script href=\"app.js\">",
+      "<script src=\"app.js\"></script>",
+      "<js src=\"app.js\">",
+      "<script link=\"app.js\">"
     ]
   },
   {
     id: 2,
-    section: "Password & Authentication",
-    type: "coding",
-    question: "Write a function that validates a password based on these rules: at least 8 characters, contains uppercase, lowercase, number and special character.",
-    language: "javascript",
-    starterCode: `function validatePassword(password) {
-  // Your code here
-  
-  // Return true if valid, false otherwise
-}`,
-    testCases: [
-      {
-        input: "Password123!",
-        expectedOutput: "true"
-      },
-      {
-        input: "password",
-        expectedOutput: "false"
-      },
-      {
-        input: "PASSWORD123",
-        expectedOutput: "false"
-      }
+    section: "Full-Stack Developer",
+    type: "multiple-choice",
+    question: "Which database is NoSQL?",
+    options: [
+      "MySQL",
+      "PostgreSQL",
+      "MongoDB",
+      "Oracle"
     ]
   },
   {
     id: 3,
-    section: "Software Security",
+    section: "Full-Stack Developer",
     type: "multiple-choice",
-    question: "Which of the following is NOT an effective way to prevent SQL injection attacks?",
+    question: "What does REST stand for in web development?",
     options: [
-      "Using prepared statements with parameterized queries",
-      "Input validation and sanitization",
-      "Using stored procedures",
-      "Encrypting all database data"
+      "Ready-to-Serve Transfer",
+      "Representational State Transfer",
+      "Real-time Exchange System",
+      "Responsive Encoding Syntax"
     ]
   },
   {
     id: 4,
-    section: "Software Security",
+    section: "Full-Stack Developer",
     type: "coding",
-    question: "Write a function that sanitizes user input to prevent XSS attacks by escaping HTML special characters.",
+    question: "Write a function to check if a given number is a prime number.",
     language: "javascript",
-    starterCode: `function sanitizeInput(userInput) {
+    starterCode: `function isPrime(num) {
   // Your code here
+  // A prime number is a number greater than 1 that has no positive divisors other than 1 and itself.
   
-  // Return sanitized input
+  // Return true if the number is prime, false otherwise
 }`,
     testCases: [
       {
-        input: "<script>alert('XSS')</script>",
-        expectedOutput: "&lt;script&gt;alert('XSS')&lt;/script&gt;"
+        input: "7",
+        expectedOutput: "true"
+      },
+      {
+        input: "10",
+        expectedOutput: "false"
       }
     ]
   },
   {
     id: 5,
-    section: "Data Protection",
-    type: "multiple-choice",
-    question: "What is the primary purpose of data encryption?",
-    options: [
-      "To make data transfer faster",
-      "To reduce storage requirements",
-      "To ensure data integrity and confidentiality",
-      "To comply with GDPR requirements only"
+    section: "Full-Stack Developer",
+    type: "coding",
+    question: "Create a basic HTML webpage that displays a heading \"My Portfolio\" and a paragraph with your name.",
+    language: "html",
+    starterCode: `<!DOCTYPE html>
+<html>
+<head>
+  <title>My Portfolio</title>
+</head>
+<body>
+  <!-- Your code here -->
+  
+</body>
+</html>`,
+    testCases: [
+      {
+        input: "",
+        expectedOutput: "html containing <h1>My Portfolio</h1> and a paragraph with name"
+      }
     ]
-  }
+  },
+
+  // Cloud Engineer Questions
+  {
+    id: 6,
+    section: "Cloud Engineer",
+    type: "multiple-choice",
+    question: "Which of the following is an example of IaaS (Infrastructure as a Service)?",
+    options: [
+      "Microsoft Office 365",
+      "Amazon EC2",
+      "Google BigQuery",
+      "Dropbox"
+    ]
+  },
+  {
+    id: 7,
+    section: "Cloud Engineer",
+    type: "multiple-choice",
+    question: "Which command is used to create a virtual machine using Terraform?",
+    options: [
+      "terraform init",
+      "terraform start",
+      "terraform apply",
+      "terraform install"
+    ]
+  },
+  {
+    id: 8,
+    section: "Cloud Engineer",
+    type: "multiple-choice",
+    question: "What does \"scalability\" in cloud mean?",
+    options: [
+      "Making backups",
+      "Handling increased load",
+      "Encrypting data",
+      "Automating tasks"
+    ]
+  },
+  {
+    id: 9,
+    section: "Cloud Engineer",
+    type: "coding",
+    question: "Simulate an S3-like behavior by creating a function that takes a list of file names and sorts them by their file extension.",
+    language: "python",
+    starterCode: `def sort_files_by_extension(files):
+    # Your code here
+    # Sort the files by their extension in lexicographical order
+    
+    # Return the sorted list
+    return []`,
+    testCases: [
+      {
+        input: '["data.csv", "image.png", "doc.txt", "report.pdf"]',
+        expectedOutput: '["data.csv", "report.pdf", "image.png", "doc.txt"]'
+      }
+    ]
+  },
+  {
+    id: 10,
+    section: "Cloud Engineer",
+    type: "coding",
+    question: "Write a program that calculates the total network bandwidth usage of multiple servers.",
+    language: "python",
+    starterCode: `def calculate_total_bandwidth(servers):
+    # servers is a list of tuples, each containing (download_bandwidth, upload_bandwidth)
+    # Calculate the total download and upload bandwidth
+    
+    # Return a tuple of (total_download, total_upload)
+    return (0, 0)`,
+    testCases: [
+      {
+        input: "[(10, 5), (20, 15), (5, 10)]",
+        expectedOutput: "(35, 30)"
+      }
+    ]
+  },
+
+  // Data Analyst Questions
+  {
+    id: 11,
+    section: "Data Analyst",
+    type: "multiple-choice",
+    question: "Which Excel function is used to find values in a table?",
+    options: [
+      "COUNTIF",
+      "VLOOKUP",
+      "SUMIF",
+      "AVG"
+    ]
+  },
+  {
+    id: 12,
+    section: "Data Analyst",
+    type: "multiple-choice",
+    question: "Which of the following is used to retrieve data from a relational database?",
+    options: [
+      "Excel",
+      "SQL",
+      "Power BI",
+      "Python"
+    ]
+  },
+  {
+    id: 13,
+    section: "Data Analyst",
+    type: "multiple-choice",
+    question: "What is the purpose of a dashboard in data analysis?",
+    options: [
+      "Store data",
+      "Perform complex calculations",
+      "Display data visually in a simplified way",
+      "Encrypt data"
+    ]
+  },
+  {
+    id: 14,
+    section: "Data Analyst",
+    type: "coding",
+    question: "Write a SQL query to count the number of students from each city.",
+    language: "sql",
+    starterCode: `-- Table: students_info (columns: id, name, city)
+-- Write your query below`,
+    testCases: [
+      {
+        input: "students_info table with data",
+        expectedOutput: "Query that returns city and count of students"
+      }
+    ]
+  },
+  {
+    id: 15,
+    section: "Data Analyst",
+    type: "coding",
+    question: "Write a Python program to format data into a simple table-like output.",
+    language: "python",
+    starterCode: `def format_table(data):
+    # data is a list of lists, where the first list contains headers
+    # and subsequent lists contain row data
+    # Format and print the data as a table
+    
+    # No return value required, just print the formatted table
+    pass`,
+    testCases: [
+      {
+        input: '[["Name", "Age", "City"], ["Kavi", 22, "Madurai"], ["Ram", 23, "Erode"]]',
+        expectedOutput: "Formatted table output"
+      }
+    ]
+  },
+
+  // DevOps Engineer Questions
+  {
+    id: 16,
+    section: "DevOps Engineer",
+    type: "multiple-choice",
+    question: "What is the primary goal of DevOps?",
+    options: [
+      "Isolate development and operations",
+      "Increase testing time",
+      "Integrate development and operations for faster delivery",
+      "Focus only on deployment"
+    ]
+  },
+  {
+    id: 17,
+    section: "DevOps Engineer",
+    type: "multiple-choice",
+    question: "What is the use of Docker in DevOps?",
+    options: [
+      "Code versioning",
+      "Cloud service",
+      "Containerization",
+      "Automation scripting"
+    ]
+  },
+  {
+    id: 18,
+    section: "DevOps Engineer",
+    type: "multiple-choice",
+    question: "What is Infrastructure as Code (IaC)?",
+    options: [
+      "Writing code without infrastructure",
+      "Automating infrastructure setup using code",
+      "Physical hardware scripting",
+      "Network testing"
+    ]
+  },
+  {
+    id: 19,
+    section: "DevOps Engineer",
+    type: "coding",
+    question: "Write a Bash script to back up a directory.",
+    language: "bash",
+    starterCode: `#!/bin/bash
+# This script should take two arguments:
+# $1: Source directory to back up
+# $2: Destination directory for the backup
+# It should create a compressed backup with today's date in the filename
+
+# Your code here
+`,
+    testCases: [
+      {
+        input: "/home/user/project /home/user/backup",
+        expectedOutput: "Backup completed: /home/user/backup/backup-YYYY-MM-DD.tar.gz"
+      }
+    ]
+  },
+  {
+    id: 20,
+    section: "DevOps Engineer",
+    type: "coding",
+    question: "Write a Bash script to automate Git commit and push.",
+    language: "bash",
+    starterCode: `#!/bin/bash
+# This script should:
+# 1. Ask the user for a commit message
+# 2. Stage all changed files
+# 3. Commit the changes with the entered message
+# 4. Push the changes to the current branch
+
+# Your code here
+`,
+    testCases: [
+      {
+        input: "Updated the README with new instructions",
+        expectedOutput: "Files committed and pushed successfully"
+      }
+    ]
+  },
+
+  // Machine Learning Engineer Questions
+  {
+    id: 21,
+    section: "Machine Learning Engineer",
+    type: "multiple-choice",
+    question: "What is the goal of supervised learning?",
+    options: [
+      "Find hidden patterns in data",
+      "Predict output from labeled data",
+      "Cluster data into groups",
+      "Clean the dataset"
+    ]
+  },
+  {
+    id: 22,
+    section: "Machine Learning Engineer",
+    type: "multiple-choice",
+    question: "Which library is commonly used for machine learning in Python?",
+    options: [
+      "NumPy",
+      "Matplotlib",
+      "Scikit-learn",
+      "Pandas"
+    ]
+  },
+  {
+    id: 23,
+    section: "Machine Learning Engineer",
+    type: "multiple-choice",
+    question: "Email spam detection is an example of:",
+    options: [
+      "Regression",
+      "Clustering",
+      "Classification",
+      "Dimensionality Reduction"
+    ]
+  },
+  {
+    id: 24,
+    section: "Machine Learning Engineer",
+    type: "coding",
+    question: "Write a Python program to calculate the Mean, Median, and Mode of a given list of numbers.",
+    language: "python",
+    starterCode: `def calculate_statistics(data):
+    # Calculate mean, median, and mode
+    
+    # Return a tuple of (mean, median, mode)
+    return (0, 0, 0)`,
+    testCases: [
+      {
+        input: "[10, 20, 20, 40, 50]",
+        expectedOutput: "(28, 20, 20)"
+      }
+    ]
+  },
+  {
+    id: 25,
+    section: "Machine Learning Engineer",
+    type: "coding",
+    question: "Use Pandas to create and display a DataFrame containing student names and their marks.",
+    language: "python",
+    starterCode: `import pandas as pd
+
+def create_student_dataframe(names, marks):
+    # Create a DataFrame with student names and marks
+    
+    # Return the DataFrame
+    return None`,
+    testCases: [
+      {
+        input: "(['Alice', 'Bob', 'Charlie'], [85, 90, 78])",
+        expectedOutput: "DataFrame with names and marks"
+      }
+    ]
+  },
 ];
 
 const sectionOrder = [
-  "Password & Authentication",
-  "Software Security",
-  "Data Protection",
-  "Network Security",
-  "Email & Communication",
-  "Device Security",
+  "Full-Stack Developer",
+  "Cloud Engineer",
+  "Data Analyst",
+  "DevOps Engineer",
+  "Machine Learning Engineer",
   "Complete"
 ];
 
