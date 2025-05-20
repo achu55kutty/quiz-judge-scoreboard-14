@@ -1,3 +1,4 @@
+
 interface TestCase {
   input: string;
   expectedOutput: string;
@@ -11,9 +12,26 @@ interface SubmissionResult {
 
 // Configuration object for the API
 const API_CONFIG = {
-  // The API key should be stored securely, not directly in the code like this.
-  // In a production environment, this would come from environment variables or a secure store
-  apiKey: '' // We'll have users input this in the UI for security
+  apiKey: '', // We'll have users input this in the UI for security
+  endpoint: 'https://ce.judge0.com'
+};
+
+// Language mapping for Judge0 API
+const LANGUAGE_MAP: { [key: string]: number } = {
+  "javascript": 63,
+  "typescript": 74,
+  "python": 71, 
+  "cpp": 54,
+  "java": 62,
+  "c": 50,
+  "csharp": 51,
+  "php": 68,
+  "ruby": 72,
+  "go": 60,
+  "rust": 73,
+  "sql": 82,
+  "bash": 46,
+  "html": 43,
 };
 
 export const setApiKey = (key: string) => {
@@ -24,14 +42,24 @@ export const getApiKey = () => {
   return API_CONFIG.apiKey;
 };
 
-// This is a mock implementation of the Judge0 API client
-// In a real application, you would integrate with the actual Judge0 API
+export const getLanguageId = (language: string): number => {
+  return LANGUAGE_MAP[language.toLowerCase()] || 63; // Default to JavaScript
+};
+
+export const getAvailableLanguages = () => {
+  return Object.keys(LANGUAGE_MAP).map(lang => ({
+    id: LANGUAGE_MAP[lang],
+    name: lang.charAt(0).toUpperCase() + lang.slice(1)
+  }));
+};
+
+// Submit code to Judge0 API
 export const submitCodeToJudge0 = async (
   code: string,
   language: string,
   testCases: TestCase[]
 ): Promise<SubmissionResult> => {
-  console.log("Submitting code to external API:", { code, language });
+  console.log("Submitting code to Judge0 API:", { code, language });
   
   if (!API_CONFIG.apiKey) {
     console.error("API key not set");
@@ -45,58 +73,66 @@ export const submitCodeToJudge0 = async (
   }
   
   try {
-    // For now we'll keep the mock implementation but make it ready for real API integration
-    // The implementation assumes the API key is valid and properly set
+    // For real API integration with Judge0
+    if (testCases.length === 0) {
+      return {
+        passed: false,
+        message: "No test cases provided.",
+        details: { error: "Missing test cases" }
+      };
+    }
     
-    // In a real implementation, you would make a fetch call to the actual API
-    // Example:
-    /*
-    const response = await fetch('https://api.example.com/submissions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${API_CONFIG.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    // If we're in development mode without a real API key, use simulation
+    if (API_CONFIG.apiKey === 'development' || API_CONFIG.apiKey === 'demo') {
+      return simulateSubmission(code, testCases);
+    }
+    
+    // Process each test case
+    const results = await Promise.all(testCases.map(async (testCase) => {
+      const payload = {
         source_code: code,
-        language_id: mapLanguageToId(language),
-        test_cases: testCases
-      }),
-    });
+        language_id: getLanguageId(language),
+        stdin: testCase.input
+      };
+      
+      const response = await fetch(`${API_CONFIG.endpoint}/submissions/?base64_encoded=false&wait=true`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RapidAPI-Key': API_CONFIG.apiKey
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      
+      // Check if the output matches expected output
+      const passed = result.stdout?.trim() === testCase.expectedOutput.trim();
+      
+      return {
+        passed,
+        stdout: result.stdout,
+        stderr: result.stderr,
+        compile_output: result.compile_output,
+        message: result.message,
+        status: result.status
+      };
+    }));
     
-    const data = await response.json();
+    // Check if all test cases passed
+    const allPassed = results.every(result => result.passed);
+    
     return {
-      passed: data.status === 'success',
-      message: data.message,
-      details: data
+      passed: allPassed,
+      message: allPassed 
+        ? "All test cases passed successfully." 
+        : "Some test cases failed. Please review your solution.",
+      details: {
+        results,
+        executionTime: results[0]?.time || "0s",
+        memoryUsed: results[0]?.memory || "0 KB"
+      }
     };
-    */
-    
-    // Simulation for demo purposes:
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Use a better check for valid code than just length
-        if (code.length > 50 || Math.random() > 0.2) {
-          resolve({
-            passed: true,
-            message: "All test cases passed successfully.",
-            details: {
-              executionTime: "0.023s",
-              memoryUsed: "12.4 MB"
-            }
-          });
-        } else {
-          resolve({
-            passed: false,
-            message: "Code failed to pass all test cases. Please review your solution.",
-            details: {
-              failedTest: testCases[0],
-              error: "Expected output did not match actual output."
-            }
-          });
-        }
-      }, 1500);
-    });
   } catch (error) {
     console.error("Error submitting code:", error);
     return {
@@ -109,41 +145,41 @@ export const submitCodeToJudge0 = async (
   }
 };
 
-// Helper function to map language names to API-specific IDs
-const mapLanguageToId = (language: string): number => {
-  const languageMap: {[key: string]: number} = {
-    'javascript': 63,  // Node.js
-    'python': 71,      // Python 3
-    'java': 62,        // Java
-    'c': 50,           // C (GCC)
-    'cpp': 54,         // C++ (GCC)
-    'csharp': 51,      // C#
-    'php': 68,         // PHP
-    'ruby': 72,        // Ruby
-    'go': 60,          // Go
-    'rust': 73,        // Rust
-    'sql': 82,         // SQL (SQLite)
-    'bash': 46,        // Bash
-    'html': 43,        // HTML
-  };
-  
-  return languageMap[language.toLowerCase()] || 63; // Default to JavaScript/Node.js
+// Simulation function for development/demo purposes
+const simulateSubmission = (code: string, testCases: TestCase[]): Promise<SubmissionResult> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Simple heuristic to check if code might be valid
+      const hasLogicCode = code.length > 50 && 
+                          (code.includes('for') || 
+                           code.includes('if') || 
+                           code.includes('function') || 
+                           code.includes('return'));
+      
+      if (hasLogicCode || Math.random() > 0.2) {
+        resolve({
+          passed: true,
+          message: "All test cases passed successfully.",
+          details: {
+            executionTime: "0.023s",
+            memoryUsed: "12.4 MB",
+            results: testCases.map(() => ({ passed: true, stdout: "Success" }))
+          }
+        });
+      } else {
+        resolve({
+          passed: false,
+          message: "Code failed to pass all test cases. Please review your solution.",
+          details: {
+            results: [{
+              passed: false,
+              stdout: "Incorrect output",
+              expected: testCases[0].expectedOutput,
+              testCase: testCases[0]
+            }]
+          }
+        });
+      }
+    }, 1500);
+  });
 };
-
-// In a real implementation, you would have more functions to handle different aspects of the Judge0 API
-// For example: getSubmissionStatus, getLanguages, etc.
-
-/**
- * Implementation notes for real Judge0 API integration:
- * 
- * 1. Judge0 API requires setting up proper authentication
- * 2. The typical flow is:
- *    a. Create a submission with source code and language ID
- *    b. Poll for the submission status until it's processed
- *    c. Get the results (stdout, stderr, compile output, etc.)
- * 3. You'll need to handle rate limiting and token management
- * 4. For multiple test cases, you would need to create multiple submissions
- *    or use a custom approach to run all tests in one submission
- * 
- * Example real API endpoint: https://judge0-ce.p.rapidapi.com/submissions
- */

@@ -1,15 +1,13 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
-import CodeEditor from "@/components/CodeEditor";
-import { submitCodeToJudge0, getApiKey } from "@/lib/judge0-api";
-import ApiKeyConfig from "@/components/ApiKeyConfig";
+import { useToast } from "@/hooks/use-toast";
+import { getApiKey } from "@/lib/judge0-api";
 import { Clock } from "lucide-react";
+import StudentCodeRunner from "@/components/StudentCodeRunner";
 
 interface QuizQuestion {
   id: number;
@@ -561,56 +559,13 @@ const Quiz = () => {
     });
   };
   
-  const handleCheckCode = async () => {
-    if (currentQuestion.type !== "coding") return;
-    
-    // Check if API key is configured
-    if (!getApiKey()) {
-      toast({
-        title: "API Key Required",
-        description: "Please configure the API key to check your code.",
-        variant: "destructive",
-      });
-      return;
+  const handleCodePass = () => {
+    // Auto-proceed to next question when code passes all tests
+    if (currentQuestionIndex === totalQuestions - 1) {
+      finishQuiz();
+    } else {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
-    
-    setIsSubmitting(true);
-    try {
-      const result = await submitCodeToJudge0(
-        code,
-        currentQuestion.language || "javascript",
-        currentQuestion.testCases || []
-      );
-      
-      if (result.passed) {
-        toast({
-          title: "Test passed!",
-          description: "Your code passed all test cases. You can proceed to the next question.",
-          variant: "default",
-        });
-        
-        // Auto-proceed to next question
-        if (currentQuestionIndex === totalQuestions - 1) {
-          finishQuiz();
-        } else {
-          setCurrentQuestionIndex(currentQuestionIndex + 1);
-        }
-      } else {
-        toast({
-          title: "Test failed",
-          description: result.message || "Your code didn't pass all test cases. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error submitting code:", error);
-      toast({
-        title: "Submission Error",
-        description: "There was a problem submitting your code.",
-        variant: "destructive",
-      });
-    }
-    setIsSubmitting(false);
   };
   
   const handleNext = () => {
@@ -622,7 +577,6 @@ const Quiz = () => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       }
     }
-    // For coding questions, check is required and handled by handleCheckCode
   };
   
   // Get the current section index for progress display
@@ -681,13 +635,6 @@ const Quiz = () => {
         <Progress value={progressPercent} className="h-2" />
       </div>
       
-      {/* API Key Configuration */}
-      {!apiKeyConfigured && currentQuestion.type === "coding" && (
-        <div className="container mx-auto px-4 py-4">
-          <ApiKeyConfig onKeyConfigured={() => setApiKeyConfigured(true)} />
-        </div>
-      )}
-      
       {/* Main quiz content */}
       <main className="container mx-auto px-4 py-8">
         <Card className="max-w-4xl mx-auto">
@@ -707,69 +654,35 @@ const Quiz = () => {
                     {option}
                   </div>
                 ))}
+                
+                <div className="flex justify-between mt-8">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => currentQuestionIndex > 0 && setCurrentQuestionIndex(currentQuestionIndex - 1)}
+                    disabled={currentQuestionIndex === 0}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleNext}
+                    disabled={!answers[currentQuestion.id]}
+                  >
+                    {currentQuestionIndex === totalQuestions - 1 ? 'Finish Quiz' : 'Next'}
+                  </Button>
+                </div>
               </div>
             )}
             
             {currentQuestion.type === "coding" && (
-              <div className="space-y-4">
-                <Tabs defaultValue="editor">
-                  <TabsList className="mb-2">
-                    <TabsTrigger value="editor">Code Editor</TabsTrigger>
-                    <TabsTrigger value="testcases">Test Cases</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="editor" className="border-none p-0">
-                    <CodeEditor 
-                      value={code} 
-                      onChange={handleCodeChange} 
-                      language={currentQuestion.language || "javascript"} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="testcases" className="border-none p-0">
-                    <div className="space-y-4 p-4 bg-gray-50 rounded-md">
-                      <h3 className="font-medium">Test Cases</h3>
-                      {currentQuestion.testCases?.map((testCase, index) => (
-                        <div key={index} className="border p-4 rounded-md bg-white">
-                          <div className="mb-2">
-                            <span className="font-medium">Input:</span> <code>{testCase.input}</code>
-                          </div>
-                          <div>
-                            <span className="font-medium">Expected Output:</span> <code>{testCase.expectedOutput}</code>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
+              <StudentCodeRunner
+                question={currentQuestion.question}
+                defaultLanguage={currentQuestion.language || "javascript"}
+                starterCode={currentQuestion.starterCode || "// Your code here"}
+                testCases={currentQuestion.testCases || []}
+                onPassedTestCase={handleCodePass}
+              />
             )}
-            
-            <div className="flex justify-between mt-8">
-              <Button 
-                variant="outline" 
-                onClick={() => currentQuestionIndex > 0 && setCurrentQuestionIndex(currentQuestionIndex - 1)}
-                disabled={currentQuestionIndex === 0 || isSubmitting}
-              >
-                Previous
-              </Button>
-              
-              {currentQuestion.type === "coding" ? (
-                <Button 
-                  onClick={handleCheckCode}
-                  disabled={!code || isSubmitting || !apiKeyConfigured}
-                >
-                  {isSubmitting ? 'Checking...' : 'Check Code'}
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleNext}
-                  disabled={!answers[currentQuestion.id] || isSubmitting}
-                >
-                  {currentQuestionIndex === totalQuestions - 1 ? 'Finish Quiz' : 'Next'}
-                </Button>
-              )}
-            </div>
           </CardContent>
         </Card>
       </main>
