@@ -10,7 +10,7 @@ interface SubmissionResult {
   details?: any;
 }
 
-// Language mapping for Judge0 API
+// Language mapping for code execution
 const LANGUAGE_MAP: { [key: string]: number } = {
   "javascript": 63,
   "typescript": 74,
@@ -28,7 +28,7 @@ const LANGUAGE_MAP: { [key: string]: number } = {
   "html": 43,
 };
 
-// Define the expected structure for the Judge0 API response
+// Define the expected structure for code execution results
 interface JudgeResult {
   passed: boolean;
   stdout?: string;
@@ -51,7 +51,7 @@ export const getAvailableLanguages = () => {
   }));
 };
 
-// Submit code to Judge0 API
+// Submit code for evaluation
 export const submitCodeToJudge0 = async (
   code: string,
   language: string,
@@ -129,7 +129,6 @@ export const submitCodeToJudge0 = async (
 
 /**
  * Basic code evaluation function (for client-side execution)
- * Note: This is a very basic implementation and has security limitations
  */
 function evaluateCode(code: string, language: string, input: string): any {
   if (language.toLowerCase() === 'javascript') {

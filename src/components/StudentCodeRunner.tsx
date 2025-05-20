@@ -130,14 +130,7 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Student Coding Exercise</CardTitle>
-      </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <p className="text-lg font-medium mb-3">{question}</p>
-        </div>
-
         <div className="flex flex-wrap items-center gap-4 mb-4">
           <div className="flex-grow sm:max-w-[200px]">
             <Select
@@ -161,7 +154,6 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
         <Tabs defaultValue="editor" className="w-full">
           <TabsList className="mb-2">
             <TabsTrigger value="editor">Code Editor</TabsTrigger>
-            <TabsTrigger value="custom">Custom Input</TabsTrigger>
             <TabsTrigger value="testcases">Test Cases</TabsTrigger>
             {testResults.length > 0 && (
               <TabsTrigger value="results">Test Results</TabsTrigger>
@@ -176,45 +168,10 @@ const StudentCodeRunner: React.FC<StudentCodeRunnerProps> = ({
             />
             <div className="flex justify-end space-x-4 mt-4">
               <Button
-                variant="outline"
-                onClick={handleRunCode}
-                disabled={isRunning || !code.trim()}
-              >
-                Run Code
-              </Button>
-              <Button
                 onClick={handleTestCode}
                 disabled={isRunning || !code.trim()}
               >
                 {isRunning ? "Running..." : "Submit & Test"}
-              </Button>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="custom" className="border-none p-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium mb-2">Input</h3>
-                <Textarea
-                  placeholder="Enter your input here..."
-                  value={customInput}
-                  onChange={(e) => setCustomInput(e.target.value)}
-                  className="min-h-[200px] font-mono text-sm"
-                />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium mb-2">Output</h3>
-                <div className="min-h-[200px] p-3 bg-gray-50 border rounded-md font-mono text-sm overflow-auto">
-                  {customOutput || "No output yet. Run your code first."}
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <Button
-                onClick={handleRunCode}
-                disabled={isRunning || !code.trim()}
-              >
-                {isRunning ? "Running..." : "Run with Input"}
               </Button>
             </div>
           </TabsContent>

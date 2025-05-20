@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { getApiKey } from "@/lib/judge0-api";
 import { Clock } from "lucide-react";
 import StudentCodeRunner from "@/components/StudentCodeRunner";
 
@@ -457,7 +457,6 @@ const Quiz = () => {
   const [progressPercent, setProgressPercent] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME_LIMIT);
   const [sectionScores, setSectionScores] = useState<{[key: string]: number}>({});
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(!!getApiKey());
   
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = quizQuestions.length;
@@ -561,6 +560,10 @@ const Quiz = () => {
   
   const handleCodePass = () => {
     // Auto-proceed to next question when code passes all tests
+    toast({
+      title: "Great job!",
+      description: "Your code passed all test cases.",
+    });
     if (currentQuestionIndex === totalQuestions - 1) {
       finishQuiz();
     } else {
