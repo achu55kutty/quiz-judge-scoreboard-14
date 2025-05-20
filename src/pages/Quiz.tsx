@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Textarea } from "@/components/ui/textarea";
 import CodeEditor from "@/components/CodeEditor";
 import { submitCodeToJudge0 } from "@/lib/judge0-api";
+import { Clock } from "lucide-react";
 
 interface QuizQuestion {
   id: number;
@@ -426,6 +426,8 @@ const sectionOrder = [
   "Complete"
 ];
 
+const QUIZ_TIME_LIMIT = 30 * 60; // 30 minutes in seconds
+
 const Quiz = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -434,9 +436,34 @@ const Quiz = () => {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progressPercent, setProgressPercent] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME_LIMIT);
+  const [sectionScores, setSectionScores] = useState<{[key: string]: number}>({});
   
   const currentQuestion = quizQuestions[currentQuestionIndex];
   const totalQuestions = quizQuestions.length;
+  
+  // Timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(prevTime => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          finishQuiz();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Format time as mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
   
   // Set initial code from starter code if available
   useEffect(() => {
@@ -459,54 +486,100 @@ const Quiz = () => {
     setAnswers({ ...answers, [currentQuestion.id]: value });
   };
   
-  const handleNext = async () => {
-    // If it's a coding question, we need to submit to Judge0 API
-    if (currentQuestion.type === "coding") {
-      setIsSubmitting(true);
-      try {
-        // This is a placeholder for actual Judge0 API integration
-        const result = await submitCodeToJudge0(
-          code,
-          currentQuestion.language || "javascript",
-          currentQuestion.testCases || []
-        );
-        
-        if (result.passed) {
-          toast({
-            title: "Test passed!",
-            description: "Your code passed all test cases.",
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Test failed",
-            description: result.message || "Your code didn't pass all test cases.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return; // Don't proceed if test failed
-        }
-      } catch (error) {
-        console.error("Error submitting code:", error);
+  // Calculate section scores
+  const calculateSectionScores = useCallback(() => {
+    const sections: {[key: string]: {correct: number, total: number}} = {};
+    
+    // Initialize sections
+    quizQuestions.forEach(q => {
+      if (!sections[q.section]) {
+        sections[q.section] = { correct: 0, total: 0 };
+      }
+      sections[q.section].total++;
+    });
+    
+    // Count correct answers per section
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      const question = quizQuestions.find(q => q.id === parseInt(questionId));
+      if (!question) return;
+      
+      // For this simplified version, we'll consider all answers correct
+      // In a real implementation, you would compare with actual correct answers
+      sections[question.section].correct++;
+    });
+    
+    // Calculate percentages
+    const scores: {[key: string]: number} = {};
+    Object.entries(sections).forEach(([section, data]) => {
+      scores[section] = Math.round((data.correct / data.total) * 100);
+    });
+    
+    return scores;
+  }, [answers]);
+  
+  const finishQuiz = () => {
+    const finalSectionScores = calculateSectionScores();
+    setSectionScores(finalSectionScores);
+    navigate("/results", { 
+      state: { 
+        answers,
+        sectionScores: finalSectionScores
+      } 
+    });
+  };
+  
+  const handleCheckCode = async () => {
+    if (currentQuestion.type !== "coding") return;
+    
+    setIsSubmitting(true);
+    try {
+      const result = await submitCodeToJudge0(
+        code,
+        currentQuestion.language || "javascript",
+        currentQuestion.testCases || []
+      );
+      
+      if (result.passed) {
         toast({
-          title: "Submission Error",
-          description: "There was a problem submitting your code.",
+          title: "Test passed!",
+          description: "Your code passed all test cases. You can proceed to the next question.",
+          variant: "default",
+        });
+        
+        // Auto-proceed to next question
+        if (currentQuestionIndex === totalQuestions - 1) {
+          finishQuiz();
+        } else {
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
+        }
+      } else {
+        toast({
+          title: "Test failed",
+          description: result.message || "Your code didn't pass all test cases. Please try again.",
           variant: "destructive",
         });
-        setIsSubmitting(false);
-        return; // Don't proceed if error
       }
-      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Error submitting code:", error);
+      toast({
+        title: "Submission Error",
+        description: "There was a problem submitting your code.",
+        variant: "destructive",
+      });
     }
-    
-    // If we're at the last question, navigate to results page
-    if (currentQuestionIndex === totalQuestions - 1) {
-      navigate("/results", { state: { answers } });
-      return;
+    setIsSubmitting(false);
+  };
+  
+  const handleNext = () => {
+    // For multiple choice, directly proceed to next question
+    if (currentQuestion.type === "multiple-choice") {
+      if (currentQuestionIndex === totalQuestions - 1) {
+        finishQuiz();
+      } else {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      }
     }
-    
-    // Otherwise, move to next question
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    // For coding questions, check is required and handled by handleCheckCode
   };
   
   // Get the current section index for progress display
@@ -517,12 +590,18 @@ const Quiz = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header with logo */}
+      {/* Header with logo and timer */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Student Assignment Portal</h1>
-          <div className="text-sm text-gray-500">
-            Question {currentQuestionIndex + 1} of {totalQuestions}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-500">
+              Question {currentQuestionIndex + 1} of {totalQuestions}
+            </div>
+            <div className="flex items-center gap-1 bg-red-100 px-3 py-1 rounded-full">
+              <Clock className="h-4 w-4 text-red-600" />
+              <span className="font-medium text-red-600">{formatTime(timeRemaining)}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -624,12 +703,22 @@ const Quiz = () => {
               >
                 Previous
               </Button>
-              <Button 
-                onClick={handleNext}
-                disabled={!answers[currentQuestion.id] || isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : currentQuestionIndex === totalQuestions - 1 ? 'Finish Quiz' : 'Next'}
-              </Button>
+              
+              {currentQuestion.type === "coding" ? (
+                <Button 
+                  onClick={handleCheckCode}
+                  disabled={!code || isSubmitting}
+                >
+                  {isSubmitting ? 'Checking...' : 'Check Code'}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleNext}
+                  disabled={!answers[currentQuestion.id] || isSubmitting}
+                >
+                  {currentQuestionIndex === totalQuestions - 1 ? 'Finish Quiz' : 'Next'}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
