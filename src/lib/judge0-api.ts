@@ -51,6 +51,10 @@ export const getAvailableLanguages = () => {
   }));
 };
 
+// Empty implementations for API key functions to satisfy imports
+export const getApiKey = (): string => '';
+export const setApiKey = (key: string): void => {};
+
 // Submit code for evaluation
 export const submitCodeToJudge0 = async (
   code: string,
