@@ -20,13 +20,14 @@ const Results = () => {
     const totalSections = Object.keys(sectionScores).length;
     if (totalSections === 0) return 0;
     
-    // Convert values to numbers before summing
+    // Ensure we're working with numbers by explicitly converting
     const totalScore = Object.values(sectionScores).reduce(
-      (sum, score) => sum + (typeof score === 'number' ? score : 0), 
+      (sum: number, score: unknown) => sum + (typeof score === 'number' ? score : 0), 
       0
     );
     
-    return Math.round(totalScore / totalSections);
+    // Ensure division is between numbers
+    return Math.round((totalScore as number) / totalSections);
   };
   
   const overallScore = calculateOverallScore();
