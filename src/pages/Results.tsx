@@ -6,6 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 
+interface SectionScores {
+  [key: string]: number;
+}
+
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,13 +25,16 @@ const Results = () => {
     if (totalSections === 0) return 0;
     
     // Ensure we're working with numbers by explicitly converting
-    const totalScore = Object.values(sectionScores).reduce(
-      (sum: number, score: unknown) => sum + (typeof score === 'number' ? score : 0), 
+    const totalScore = Object.values(sectionScores).reduce<number>(
+      (sum: number, score: unknown) => {
+        const numericScore = typeof score === 'number' ? score : 0;
+        return sum + numericScore;
+      }, 
       0
     );
     
     // Ensure division is between numbers
-    return Math.round((totalScore as number) / totalSections);
+    return Math.round(totalScore / totalSections);
   };
   
   const overallScore = calculateOverallScore();
@@ -88,7 +95,7 @@ const Results = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium">{section}</span>
-                    <span className="font-bold">{String(sectionScore)}%</span>
+                    <span className="font-bold">{typeof sectionScore === 'number' ? sectionScore : 0}%</span>
                   </div>
                   <Progress 
                     value={typeof sectionScore === 'number' ? sectionScore : 0} 
